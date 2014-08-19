@@ -29,5 +29,66 @@
 ;;
 ;;; Code:
 
+(defvar op/operators nil
+  "List of operator definitions.")
+
+(defun op/get-position (operator)
+  "Get whitespace position from OPERATOR pair."
+  (cdr (op/get-operator operator)))
+
+(defun op/get-operator (operator)
+  "Get the OPERATOR definition from `op/operators'."
+  (or (op/get-mode-operator operator)
+      (op/get-global-operator operator)))
+
+(defun op/get-mode-operator (operator)
+  "Get the local OPERATOR in current major mode."
+  (let ((mode-operators (assq major-mode op/operators)))
+    (op/get--operator operator mode-operators)))
+
+(defun op/get-global-operator (operator)
+  "Get the global OPERATOR."
+  (let ((global-operators (assq t op/operators)))
+    (op/get--operator operator global-operators)))
+
+(defun op/get--operator (operator operators)
+  "Get whitespace position with OPERATOR from OPERATORS."
+  (assq operator operators))
+
+(defun op/insert-whitespace-before ()
+  "Insert whitespace before the target operator."
+  (save-excursion (backward-char) (insert " ")))
+
+(defun op/insert-whitespace-after ()
+  "Insert whitespace after the target operator."
+  (insert " "))
+
+(defun op/insert-whitespace-around ()
+  "Insert whitespace around the target operator."
+  (op/insert-whitespace-before)
+  (op/insert-whitespace-after))
+
+(defun op/post-self-insert-function ()
+  "The function that actually insert the whitespaces."
+  (let ((position (op/get-position last-command-event)))
+    (pcase position
+      (`before (op/insert-whitespace-before))
+      (`after (op/insert-whitespace-after))
+      (`around (op/insert-whitespace-around)))))
+
+;;;###autoload
+(define-minor-mode operator-mode
+  "Automatically insert whitespaces before, around or after some chars.
+With a prefix argument ARG, enable Operator mode if ARG is
+positive, and disable it otherwise.  If called from Lisp, enable
+the mode if ARG is omitted or nil."
+  :group 'operator
+  :lighter " +"
+  (if operator-mode
+      (add-hook 'post-self-insert-hook
+                #'op/post-self-insert-function)
+    (remove-hook 'post-self-insert-hook
+                 #'op/post-self-insert-function)))
+
 (provide 'operator)
 ;;; operator.el ends here
