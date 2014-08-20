@@ -55,13 +55,26 @@
   "Get whitespace position with OPERATOR from OPERATORS."
   (assq operator operators))
 
+(defun op/after-whitespace-p ()
+  "Return t if the `preceding-char' is whitespace."
+  (eq (preceding-char) ?\s))
+
+(defun op/before-whitespace-p ()
+  "Return t if the `following-char' is whitespace."
+  (eq (following-char) ?\s))
+
 (defun op/insert-whitespace-before ()
   "Insert whitespace before the target operator."
-  (save-excursion (backward-char) (insert " ")))
+  (save-excursion
+    (backward-char)
+    (unless (op/after-whitespace-p)
+      (insert " "))))
 
 (defun op/insert-whitespace-after ()
   "Insert whitespace after the target operator."
-  (insert " "))
+  (if (op/before-whitespace-p)
+      (forward-char)
+    (insert " ")))
 
 (defun op/insert-whitespace-around ()
   "Insert whitespace around the target operator."
