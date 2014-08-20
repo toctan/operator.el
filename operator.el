@@ -34,7 +34,8 @@
 
 (defun op/get-position (operator)
   "Get whitespace position from OPERATOR pair."
-  (cdr (op/get-operator operator)))
+  (let ((pos (cdr (op/get-operator operator))))
+    (if (functionp pos) (funcall pos) pos)))
 
 (defun op/get-operator (operator)
   "Get the OPERATOR definition from `op/operators'."
