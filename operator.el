@@ -43,8 +43,12 @@
       (op/get-global-operator operator)))
 
 (defun op/get-mode-operator (operator)
-  "Get the local OPERATOR in current major mode."
-  (let ((mode-operators (assq major-mode op/operators)))
+  "Get mode specific OPERATOR.
+
+Get the operator from `text-mode' if point is inside a comment,
+otherwise from current `major-mode'."
+  (let* ((mode (if (op/point-inside-comment-p) 'text-mode major-mode))
+         (mode-operators (assq mode op/operators)))
     (op/get--operator operator mode-operators)))
 
 (defun op/get-global-operator (operator)
@@ -67,6 +71,10 @@
 (defun op/point-inside-string-p ()
   "Return t if point is inside a string."
   (nth 3 (syntax-ppss)))
+
+(defun op/point-inside-comment-p ()
+  "Return t if point is inside a comment."
+  (nth 4 (syntax-ppss)))
 
 (defun op/remove-extra-whitespace ()
   "Remove the extra whitespace between operators."
