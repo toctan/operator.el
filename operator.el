@@ -63,6 +63,10 @@
   "Return t if the `following-char' is whitespace."
   (eq (following-char) ?\s))
 
+(defun op/point-inside-string-p ()
+  "Return t if point is inside a string."
+  (nth 3 (syntax-ppss)))
+
 (defun op/remove-extra-whitespace ()
   "Remove the extra whitespace between operators."
   (let* ((char (char-before (- (point) 1)))
@@ -90,11 +94,12 @@
 
 (defun op/post-self-insert-function ()
   "The function that actually insert the whitespaces."
-  (let ((position (op/get-position last-command-event)))
-    (pcase position
-      (`before (op/insert-whitespace-before))
-      (`after (op/insert-whitespace-after))
-      (`around (op/insert-whitespace-around)))))
+  (when (not (op/point-inside-string-p))
+    (let ((position (op/get-position last-command-event)))
+      (pcase position
+        (`before (op/insert-whitespace-before))
+        (`after (op/insert-whitespace-after))
+        (`around (op/insert-whitespace-around))))))
 
 ;;;###autoload
 (define-minor-mode operator-mode
