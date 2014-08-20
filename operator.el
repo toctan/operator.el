@@ -63,11 +63,18 @@
   "Return t if the `following-char' is whitespace."
   (eq (following-char) ?\s))
 
+(defun op/remove-extra-whitespace ()
+  "Remove the extra whitespace between operators."
+  (let* ((char (char-before (- (point) 1)))
+         (operator (op/get-operator char)))
+    (if operator (delete-char -1))))
+
 (defun op/insert-whitespace-before ()
   "Insert whitespace before the target operator."
   (save-excursion
     (backward-char)
-    (unless (op/after-whitespace-p)
+    (if (op/after-whitespace-p)
+        (op/remove-extra-whitespace)
       (insert " "))))
 
 (defun op/insert-whitespace-after ()
